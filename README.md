@@ -44,7 +44,7 @@ npm run build
 
 `npm run format` formats files. `npm run preview` serves the built application locally on port 5173; stop dev first. Neither build nor preview deploys. Type generation expects `npm run setup` first so secret names are known, but generated files never contain secret values.
 
-For real Chromium/WebKit HTTPS tests, including shared cookies, follow [browser prerequisites](docs/testing.md). Tests are committed; [verification results](docs/verification.md) distinguish executed runtime checks from browser checks blocked in the implementation environment.
+For real Chromium/WebKit HTTPS tests, including shared cookies, follow [browser prerequisites](docs/testing.md). [Verification results](docs/verification.md) record passing runtime and CI browser checks, local browser-environment limitations, and remaining manual checks.
 
 ## Boundaries and operations
 

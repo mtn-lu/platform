@@ -123,7 +123,7 @@ async function capturedUrl() {
 test("real login, deliberate confirmation, shared cookie RPC, logout and revocation", async ({
   page,
   context,
-}) => {
+}, info) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(origin + "/login");
@@ -137,6 +137,10 @@ test("real login, deliberate confirmation, shared cookie RPC, logout and revocat
   await expect(
     page.getByRole("button", { name: "Continue", exact: true }),
   ).toBeVisible();
+  await page.screenshot({
+    path: `test-results/confirm-${info.project.name}.png`,
+    fullPage: true,
+  });
   expect(page.url()).toBe(origin + "/login/confirm");
   expect(await db.prepare("SELECT * FROM session").first()).toBeNull();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
@@ -144,6 +148,10 @@ test("real login, deliberate confirmation, shared cookie RPC, logout and revocat
   await expect(
     page.getByRole("heading", { name: "Hello, Friend." }),
   ).toBeVisible();
+  await page.screenshot({
+    path: `test-results/account-${info.project.name}.png`,
+    fullPage: true,
+  });
   const cookies = await context.cookies();
   const session = cookies.find(
     (c) => c.name === "__Secure-mtn-test.session_token",

@@ -35,3 +35,11 @@ jobs:
         run: echo '127.0.0.1 mtn.test games.mtn.test' | sudo tee -a /etc/hosts
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:browser
+      - name: Retain synthetic visual checks
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: synthetic-screenshots
+          path: test-results/**/*.png
+          retention-days: 7
+          if-no-files-found: warn

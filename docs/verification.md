@@ -1,6 +1,6 @@
 # Verification — 2026-09-06
 
-Implementation is reviewable but **browser acceptance is not complete**. No deployment, remote migration, remote secret change, account setting change, or real email send was performed.
+Implementation is reviewable. [GitHub CI](https://github.com/mtn-lu/platform/actions/runs/34053027269) passed the full workflow, including all six Playwright cases in Chromium desktop and WebKit at a 320px phone viewport. No deployment, remote migration, remote secret change, account setting change, or real email send was performed.
 
 ## Executed checks
 
@@ -16,11 +16,11 @@ Implementation is reviewable but **browser acceptance is not complete**. No depl
 - `npm run test:tls`; `npm run test:browser -- --project=chromium-desktop --grep 'built Worker'`: one built-artifact smoke test passes without launching a browser. It exercises the real consumer service binding, revocation, static CSP, API navigation and absence of tested credentials in captured runtime logs. This is **not** a Chromium browser pass.
 - `npm run dev`: Vite starts after disabling optional inspector port discovery, which otherwise failed on this environment's restricted network-interface enumeration.
 
-## Checks blocked / not established
+## Browser evidence and remaining limits
 
 `npm run test:browser` was attempted. Browser cases did not run: Chromium/Chrome Headless Shell downloads repeatedly returned gateway errors/timeouts. WebKit downloaded through the official fallback host but its required host libraries are missing. `npx playwright install-deps chromium webkit` failed because the environment cannot perform the package installer's required user/group operations. A separate cloud-browser attempt to access the local application returned ERR_BLOCKED_BY_CLIENT.
 
-Therefore **Chromium/WebKit UI flows, actual browser shared-cookie behavior, axe results, keyboard/visual review, screenshot review and physical-device testing are unverified here**. The committed browser harness and CI require them; no tests are silently skipped. The HTTPS harness starts locally with distinct test hostnames, generated TLS and separate ephemeral D1. Passing service-binding and cookie-attribute checks alone does not prove browser domain-cookie behavior.
+The GitHub runner subsequently installed both browsers and passed all six cases: real UI login/confirmation, HTTPS domain-cookie recognition by the consumer, logout/revocation denial, expired-link recovery, axe checks, keyboard focus assertion, overflow and API navigation. The harness uses controlled `mtn.test` / `games.mtn.test` hostnames, generated TLS and separate ephemeral D1. CI retains only synthetic screenshots for seven days; the PR records the final visual review. Physical-device testing and a complete manual keyboard audit remain unperformed. A phone viewport does not establish physical-device behavior.
 
 Real Cloudflare email deliverability, account/beta availability, production DNS, actual production CPU/latency/cost, backup restoration against a remote account and deployed cookie behavior were not tested. Those require owner-controlled deployment setup. The scaffold does not claim to be independently security-audited.
 
@@ -55,4 +55,6 @@ npm run test:tls
 npm run test:browser -- --project=chromium-desktop --grep 'built Worker'
 ```
 
-A Node child-process check started the clean-checkout Vite dev server and fetched `/api/health` (200 application/json), `/api/missing` (404 application/json), and `/account` (200 text/html), then stopped the server. Final log-correlation/credential assertions were subsequently rechecked with typecheck, lint, all 15 workerd tests, build and the service-binding smoke test. Source diff/ignored artifact review found no committed secrets, local state, private keys or real identities. A scan of frontend build files found zero matches for the generated local secrets. SHA pins for checkout/setup-node v6 were verified against those official repositories' tag refs. Git whitespace exceptions apply only to verbatim Wrangler-generated declarations.
+A Node child-process check started the clean-checkout Vite dev server and fetched `/api/health` (200 application/json), `/api/missing` (404 application/json), and `/account` (200 text/html), then stopped the server. Final log-correlation/credential assertions were subsequently rechecked with typecheck, lint, all 15 workerd tests, build and the service-binding smoke test. Source diff/ignored artifact review found no committed secrets, local state, private keys or real identities. A scan of frontend build files found zero matches for the generated local secrets. SHA pins for checkout/setup-node/upload-artifact v6 were verified against those official repositories' tag refs. Git whitespace exceptions apply only to verbatim Wrangler-generated declarations.
+
+Post-phase QA: retained synthetic home/confirmation/account screenshots, updated CI browser evidence, and reran formatting, typecheck and lint before publishing the follow-up commit.
