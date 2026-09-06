@@ -277,7 +277,13 @@ test("built Worker service binding smoke without browser binaries", async () => 
     headers: { accept: "text/html", "sec-fetch-mode": "navigate" },
   });
   expect(missing.status).toBe(404);
+  const credential = await db
+    .prepare("SELECT token FROM session LIMIT 1")
+    .first<{ token: string }>();
+  if (!credential) throw new Error("Expected synthetic session");
   const logs = JSON.stringify(harness.getLogs());
+  expect(logs).not.toContain(credential.token);
+  expect(await confirmed.clone().text()).not.toContain(credential.token);
   expect(logs).not.toContain(token);
   expect(logs).not.toContain(cookie);
   expect(logs).not.toContain("friend@example.test");

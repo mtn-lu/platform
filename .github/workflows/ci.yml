@@ -1,0 +1,37 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm run setup
+      - run: npm run types && npm run types:consumer
+      - run: git diff --exit-code -- worker-configuration.d.ts tests/fixtures/consumer/worker-configuration.d.ts
+      - run: npm run format:check && npm run typecheck && npm run lint
+      - run: npm run db:migrate && npm run db:migrate && npm run email -- setup
+      - run: npm run access -- grant friend@example.test && npm run access -- revoke friend@example.test
+      - run: npm test && npm run test:node
+      - run: npm audit
+      - run: npm run build
+      - run: npm run test:tls
+      - name: Configure disposable test DNS
+        run: echo '127.0.0.1 mtn.test games.mtn.test' | sudo tee -a /etc/hosts
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run test:browser

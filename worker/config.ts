@@ -38,7 +38,7 @@ export function config(env: CloudflareEnv) {
     if (
       c.CANONICAL_ORIGIN !== "https://mtn.lu" ||
       c.EMAIL_MODE !== "cloudflare" ||
-      !("EMAIL" in env) ||
+      !env.EMAIL ||
       !z.email().safeParse(c.EMAIL_FROM).success ||
       returnOrigins.some(
         (s) => !s.startsWith("https://") || s.includes(".invalid"),

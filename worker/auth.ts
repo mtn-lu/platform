@@ -7,6 +7,8 @@ import { emailTransport } from "./email.ts";
 import { returnDestination } from "./return-to.ts";
 export function createAuth(env: CloudflareEnv, returnTo = "/account") {
   const c = config(env);
+  const correlationId = crypto.randomUUID();
+  const started = performance.now();
   const destination = returnDestination(
     returnTo,
     c.CANONICAL_ORIGIN,
@@ -18,6 +20,7 @@ export function createAuth(env: CloudflareEnv, returnTo = "/account") {
     basePath: "/api/auth",
     secret: c.AUTH_SECRET,
     database: env.DB,
+    verification: { disableCleanup: true },
     trustedOrigins: [c.CANONICAL_ORIGIN],
     session: {
       expiresIn: 30 * 24 * 60 * 60,
@@ -46,7 +49,12 @@ export function createAuth(env: CloudflareEnv, returnTo = "/account") {
     logger: {
       log: () => {
         console.warn(
-          JSON.stringify({ event: "auth_library", code: "AUTH_EVENT" }),
+          JSON.stringify({
+            event: "auth_library",
+            code: "AUTH_EVENT",
+            requestId: correlationId,
+            durationMs: Math.round(performance.now() - started),
+          }),
         );
       },
     },

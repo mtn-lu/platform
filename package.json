@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1",
+    "preview": "vite preview --host 127.0.0.1 --port 5173 --strictPort",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "format": "prettier --write .",
