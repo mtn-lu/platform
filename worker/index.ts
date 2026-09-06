@@ -7,6 +7,7 @@ import { createAuth, currentSession } from "./auth.ts";
 import { quota } from "./throttle.ts";
 import { csrf, jsonBody, HttpError, copyCookies } from "./http.ts";
 import { returnDestination } from "./return-to.ts";
+import { cleanup } from "./maintenance.ts";
 const app = new Hono<{
   Bindings: CloudflareEnv;
   Variables: { requestId: string };
@@ -14,6 +15,17 @@ const app = new Hono<{
 app.use("*", async (c, next) => {
   c.set("requestId", crypto.randomUUID());
   c.header("Cache-Control", "no-store");
+  c.header(
+    "Content-Security-Policy",
+    "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+  );
+  c.header("X-Frame-Options", "DENY");
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("Referrer-Policy", "no-referrer");
+  c.header(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), payment=()",
+  );
   const started = performance.now();
   await next();
   c.header("X-Request-Id", c.get("requestId"));
@@ -211,4 +223,10 @@ app.onError((error, c) =>
     error instanceof HttpError ? error.status : 503,
   ),
 );
-export default app;
+export default {
+  fetch: app.fetch,
+  async scheduled(_event: ScheduledController, env: CloudflareEnv) {
+    await cleanup(env);
+  },
+} satisfies ExportedHandler<CloudflareEnv>;
+
