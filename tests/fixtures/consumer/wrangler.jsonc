@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../node_modules/wrangler/config-schema.json",
+  "name": "mtn-consumer-test",
+  "main": "index.ts",
+  "compatibility_date": "2026-09-06",
+  "workers_dev": false,
+  "preview_urls": false,
+  "services": [
+    {
+      "binding": "AUTH",
+      "service": "mtn-platform-local",
+      "entrypoint": "SessionValidation",
+    },
+  ],
+}

@@ -1,5 +1,5 @@
-worker-configuration.d.ts
+**/worker-configuration.d.ts
 package-lock.json
 dist
-.wrangler
+**/.wrangler
 .local

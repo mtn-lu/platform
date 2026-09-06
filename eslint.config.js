@@ -7,8 +7,8 @@ export default ts.config(
     ignores: [
       "dist/**",
       "node_modules/**",
-      "worker-configuration.d.ts",
-      ".wrangler/**",
+      "**/worker-configuration.d.ts",
+      "**/.wrangler/**",
       ".local/**",
       "playwright-report/**",
       "test-results/**",

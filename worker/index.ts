@@ -230,3 +230,4 @@ export default {
   },
 } satisfies ExportedHandler<CloudflareEnv>;
 
+export { SessionValidation } from "./session-entrypoint.ts";

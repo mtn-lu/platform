@@ -35,7 +35,7 @@
   },
   "env": {
     "production": {
-      "name": "REPLACE-PRODUCTION-WORKER-NAME",
+      "name": "replace-production-worker-name",
       "workers_dev": false,
       "preview_urls": false,
       "vars": {
