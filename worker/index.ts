@@ -13,6 +13,10 @@ const app = new Hono<{
   Variables: { requestId: string };
 }>();
 app.use("*", async (c, next) => {
+  if (c.req.path !== "/api" && !c.req.path.startsWith("/api/")) {
+    await next();
+    return;
+  }
   c.set("requestId", crypto.randomUUID());
   c.header("Cache-Control", "no-store");
   c.header(
@@ -214,7 +218,11 @@ for (const [path, method] of [
       return c.json({ error: { code: "METHOD_NOT_ALLOWED" } }, 405);
     });
 }
-app.notFound((c) => c.json({ error: { code: "NOT_FOUND" } }, 404));
+app.notFound((c) =>
+  c.req.path === "/api" || c.req.path.startsWith("/api/")
+    ? c.json({ error: { code: "NOT_FOUND" } }, 404)
+    : c.env.ASSETS.fetch(c.req.raw),
+);
 app.onError((error, c) =>
   c.json(
     {

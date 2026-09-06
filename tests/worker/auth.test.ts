@@ -271,3 +271,51 @@ it("handles capture failure neutrally without exposing provider errors", async (
     await env.DB.exec("ALTER TABLE unavailable_email RENAME TO dev_email");
   }
 });
+
+it("logs out every session and validates minimal read-only RPC identity", async () => {
+  await grant();
+  const cookies: string[] = [];
+  for (let i = 0; i < 2; i++) {
+    await post("/api/auth/request-link", { email: "friend@example.test" });
+    const response = await post("/api/auth/confirm", { token: await token() });
+    expect(response.status).toBe(200);
+    cookies.push(
+      response.headers
+        .getSetCookie()
+        .map((c) => c.split(";")[0])
+        .join("; "),
+    );
+  }
+  const first = cookies[0] ?? "";
+  const second = cookies[1] ?? "";
+  const identity = await exports.SessionValidation.validateSession(first);
+  expect(identity).toMatchObject({ version: 1, name: "Friend" });
+  expect(identity && Object.keys(identity).sort()).toEqual([
+    "expiresAt",
+    "id",
+    "name",
+    "version",
+  ]);
+  const rows = await env.DB.prepare("SELECT * FROM session ORDER BY id").all();
+  await exports.SessionValidation.validateSession(first);
+  expect(
+    await env.DB.prepare("SELECT * FROM session ORDER BY id").all(),
+  ).toMatchObject({ results: rows.results });
+  await env.DB.exec("UPDATE platform_access SET enabled=0");
+  expect(await exports.SessionValidation.validateSession(first)).toBeNull();
+  await env.DB.exec("UPDATE platform_access SET enabled=1");
+  const logout = await post("/api/auth/logout-all", {}, first);
+  expect(logout.status).toBe(200);
+  expect(logout.headers.getSetCookie().join(" ")).toMatch(/Max-Age=0/iu);
+  expect(await exports.SessionValidation.validateSession(second)).toBeNull();
+  expect(
+    (
+      await exports.default.fetch(origin + "/api/me", {
+        headers: { cookie: second },
+      })
+    ).status,
+  ).toBe(401);
+  expect(
+    (await exports.default.fetch(origin + "/api/validateSession")).status,
+  ).toBe(404);
+});

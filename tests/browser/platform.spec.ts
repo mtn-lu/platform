@@ -57,9 +57,10 @@ test.beforeAll(async () => {
         for await (const chunk of req) {
           if (Buffer.isBuffer(chunk)) chunks.push(chunk);
         }
-        const target = harness.getWorker(
-          host === "mtn.test:8443" ? "mtn-platform-local" : "mtn-consumer-test",
-        );
+        const target =
+          host === "mtn.test:8443"
+            ? harness.getWorker("mtn-platform-local")
+            : harness.getWorker("mtn-consumer-test");
         const method = req.method ?? "GET";
         const r = await target.fetch(`https://${host}${req.url ?? "/"}`, {
           method,
@@ -228,4 +229,56 @@ test("expired link recovery, deep links, keyboard and accessible responsive scre
   const missing = await page.goto(origin + "/api/unknown");
   expect(missing?.status()).toBe(404);
   expect(await missing?.text()).not.toContain("<html");
+});
+
+test("built Worker service binding smoke without browser binaries", async () => {
+  const root = harness.getWorker("mtn-platform-local");
+  const consumer = harness.getWorker("mtn-consumer-test");
+  const headers = { origin, "Content-Type": "application/json" };
+  const requested = await root.fetch(origin + "/api/auth/request-link", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ email: "friend@example.test" }),
+  });
+  expect(requested.status).toBe(202);
+  const token = new URLSearchParams(
+    new URL(await capturedUrl()).hash.slice(1),
+  ).get("token");
+  const confirmed = await root.fetch(origin + "/api/auth/confirm", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ token }),
+  });
+  expect(confirmed.status).toBe(200);
+  const cookie = confirmed.headers
+    .getSetCookie()
+    .map((c) => c.split(";")[0])
+    .join("; ");
+  expect((await consumer.fetch(games, { headers: { cookie } })).status).toBe(
+    200,
+  );
+  const identity = await consumer.fetch(games, {
+    headers: { cookie, "X-User-Id": "forged" },
+  });
+  expect(await identity.json()).toMatchObject({
+    user: { version: 1, name: "Friend" },
+  });
+  await db.exec("UPDATE platform_access SET enabled=0");
+  expect((await consumer.fetch(games, { headers: { cookie } })).status).toBe(
+    401,
+  );
+  const landing = await root.fetch(origin + "/");
+  expect(landing.status).toBe(200);
+  expect(landing.headers.get("Content-Security-Policy")).toContain(
+    "script-src 'self'",
+  );
+  expect(await landing.text()).not.toContain(cookie);
+  const missing = await root.fetch(origin + "/api/unknown", {
+    headers: { accept: "text/html", "sec-fetch-mode": "navigate" },
+  });
+  expect(missing.status).toBe(404);
+  const logs = JSON.stringify(harness.getLogs());
+  expect(logs).not.toContain(token);
+  expect(logs).not.toContain(cookie);
+  expect(logs).not.toContain("friend@example.test");
 });

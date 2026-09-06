@@ -22,7 +22,11 @@
     "test:browser": "playwright test",
     "db:migrate": "wrangler d1 migrations apply DB --local",
     "access": "node scripts/access.ts",
-    "preflight": "node scripts/preflight.ts"
+    "preflight": "node scripts/preflight.ts",
+    "test:node": "node --test tests/node/*.test.ts",
+    "test:tls": "node scripts/test-tls.ts",
+    "email": "node scripts/email.ts",
+    "types:consumer": "wrangler types tests/fixtures/consumer/worker-configuration.d.ts --config tests/fixtures/consumer/wrangler.jsonc --config wrangler.jsonc --env-interface ConsumerEnv --include-runtime=false"
   },
   "dependencies": {
     "better-auth": "1.7.3",
