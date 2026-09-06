@@ -23,8 +23,8 @@
     "APP_ENV": "production",
     "CANONICAL_ORIGIN": "https://mtn.lu",
     "RETURN_ORIGINS": "https://mtn.lu",
-    "EMAIL_MODE": "cloudflare",
-    "EMAIL_FROM": "REPLACE-VERIFIED-SENDER",
+    "EMAIL_MODE": "resend",
+    "EMAIL_FROM": "login@auth.mtn.lu",
     "LINK_ADDRESS_LIMIT": "3",
     "LINK_IP_LIMIT": "20",
     "DAILY_EMAIL_LIMIT": "50",
@@ -36,13 +36,7 @@
   "triggers": {
     "crons": ["17 * * * *"],
   },
-  "send_email": [
-    {
-      "name": "EMAIL",
-      "remote": false,
-    },
-  ],
-  "account_id": "REPLACE-ACCOUNT-ID",
+  "account_id": "a576f5422f8d35ba609addec2bf36ffc",
   "routes": [
     {
       "pattern": "mtn.lu",
