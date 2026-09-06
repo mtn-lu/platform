@@ -49,9 +49,9 @@ it("uses library production cookie attributes without sending network traffic", 
     APP_ENV: "production",
     CANONICAL_ORIGIN: "https://mtn.lu",
     RETURN_ORIGINS: "https://mtn.lu",
-    EMAIL_MODE: "cloudflare",
+    EMAIL_MODE: "resend",
     EMAIL_FROM: "sender@example.test",
-    EMAIL: { send: () => Promise.resolve({ messageId: "synthetic" }) },
+    RESEND_API_KEY: `re_${"c".repeat(61)}`,
   } satisfies CloudflareEnv;
   const context = await createAuth(production).$context;
   expect(context.authCookies.sessionToken).toMatchObject({
@@ -68,37 +68,37 @@ it("uses library production cookie attributes without sending network traffic", 
   expect(local.authCookies.sessionToken.attributes.domain).toBeUndefined();
 });
 it("uses structured email, escapes HTML, and propagates failures without fallback", async () => {
-  const sent: unknown[] = [];
+  let sent: { input: string; init: RequestInit | undefined } | undefined;
   const production = {
     ...env,
     APP_ENV: "production",
     CANONICAL_ORIGIN: "https://mtn.lu",
     RETURN_ORIGINS: "https://mtn.lu",
-    EMAIL_MODE: "cloudflare",
+    EMAIL_MODE: "resend",
     EMAIL_FROM: "sender@example.test",
-    EMAIL: {
-      send: (message) => {
-        sent.push(message);
-        return Promise.resolve({ messageId: "synthetic" });
-      },
-    },
+    RESEND_API_KEY: `re_${"c".repeat(61)}`,
   } satisfies CloudflareEnv;
-  await emailTransport(production).send({
+  await emailTransport(production, (input, init) => {
+    sent = { input: String(input), init };
+    return Promise.resolve(new Response(null, { status: 200 }));
+  }).send({
     to: "friend@example.test",
     url: "https://mtn.test/login/confirm#synthetic",
   });
-  expect(sent).toHaveLength(1);
-  expect(sent[0]).toMatchObject({
-    to: "friend@example.test",
+  expect(sent?.input).toBe("https://api.resend.com/emails");
+  const body = sent?.init?.body;
+  expect(typeof body).toBe("string");
+  if (typeof body !== "string") throw new Error("Missing Resend request body");
+  expect(JSON.parse(body)).toMatchObject({
+    to: ["friend@example.test"],
     from: "sender@example.test",
     subject: "Your mtn.lu sign-in link",
   });
   expect(escapeHtml("<\"&'>")).toBe("&lt;&quot;&amp;&#39;&gt;");
   await expect(
-    emailTransport({
-      ...production,
-      EMAIL: { send: () => Promise.reject(new Error("provider detail")) },
-    }).send({
+    emailTransport(production, () =>
+      Promise.resolve(new Response("provider detail", { status: 500 })),
+    ).send({
       to: "friend@example.test",
       url: "https://mtn.test/login/confirm#synthetic",
     }),
