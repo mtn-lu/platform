@@ -1,0 +1,35 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #182d28;
+  background: #f6f4ed;
+  font-synthesis: none;
+}
+body {
+  margin: 0;
+}
+main {
+  max-width: 64rem;
+  margin: auto;
+  padding: 4rem 1.25rem;
+}
+h1 {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  line-height: 1.04;
+  letter-spacing: -0.055em;
+  max-width: 12ch;
+}
+* {
+  box-sizing: border-box;
+}
+a {
+  color: #18594a;
+}
+button,
+input {
+  font: inherit;
+  min-height: 48px;
+}
+:focus-visible {
+  outline: 3px solid #a14616;
+  outline-offset: 4px;
+}
