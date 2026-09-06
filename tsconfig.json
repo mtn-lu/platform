@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./src" },
+    { "path": "./worker" },
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tests/worker" },
+    { "path": "./tests/fixtures/consumer" },
+    { "path": "./tests/browser" },
+    { "path": "./tests/node" }
+  ]
+}

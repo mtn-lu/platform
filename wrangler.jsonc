@@ -1,0 +1,71 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mtn-platform-local",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-06",
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api", "/api/*"],
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mtn-platform-local",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "vars": {
+    "APP_ENV": "local",
+    "CANONICAL_ORIGIN": "http://127.0.0.1:5173",
+    "RETURN_ORIGINS": "http://127.0.0.1:5173",
+    "EMAIL_MODE": "capture",
+    "EMAIL_FROM": "unset",
+    "LINK_ADDRESS_LIMIT": "3",
+    "LINK_IP_LIMIT": "20",
+    "DAILY_EMAIL_LIMIT": "50",
+    "CONFIRM_IP_LIMIT": "30",
+  },
+  "observability": {
+    "enabled": false,
+  },
+  "env": {
+    "production": {
+      "name": "replace-production-worker-name",
+      "workers_dev": false,
+      "preview_urls": false,
+      "vars": {
+        "APP_ENV": "production",
+        "CANONICAL_ORIGIN": "https://REPLACE.invalid",
+        "RETURN_ORIGINS": "https://REPLACE.invalid",
+        "EMAIL_MODE": "cloudflare",
+        "EMAIL_FROM": "REPLACE-VERIFIED-SENDER",
+        "LINK_ADDRESS_LIMIT": "3",
+        "LINK_IP_LIMIT": "20",
+        "DAILY_EMAIL_LIMIT": "50",
+        "CONFIRM_IP_LIMIT": "30",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "REPLACE-DATABASE-NAME",
+          "database_id": "REPLACE-DATABASE-ID",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "send_email": [
+        {
+          "name": "EMAIL",
+          "remote": false,
+        },
+      ],
+    },
+  },
+  "triggers": {
+    "crons": ["17 * * * *"],
+  },
+}
