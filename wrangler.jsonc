@@ -30,5 +30,39 @@
     "DAILY_EMAIL_LIMIT": "50",
     "CONFIRM_IP_LIMIT": "30",
   },
-  "observability": { "enabled": false },
+  "observability": {
+    "enabled": false,
+  },
+  "env": {
+    "production": {
+      "name": "REPLACE-PRODUCTION-WORKER-NAME",
+      "workers_dev": false,
+      "preview_urls": false,
+      "vars": {
+        "APP_ENV": "production",
+        "CANONICAL_ORIGIN": "https://REPLACE.invalid",
+        "RETURN_ORIGINS": "https://REPLACE.invalid",
+        "EMAIL_MODE": "cloudflare",
+        "EMAIL_FROM": "REPLACE-VERIFIED-SENDER",
+        "LINK_ADDRESS_LIMIT": "3",
+        "LINK_IP_LIMIT": "20",
+        "DAILY_EMAIL_LIMIT": "50",
+        "CONFIRM_IP_LIMIT": "30",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "REPLACE-DATABASE-NAME",
+          "database_id": "REPLACE-DATABASE-ID",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "send_email": [
+        {
+          "name": "EMAIL",
+          "remote": false,
+        },
+      ],
+    },
+  },
 }
