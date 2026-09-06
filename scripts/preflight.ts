@@ -15,7 +15,7 @@ export function validateProduction(
       APP_ENV: z.literal("production"),
       CANONICAL_ORIGIN: z.literal("https://mtn.lu"),
       RETURN_ORIGINS: z.string(),
-      EMAIL_MODE: z.literal("cloudflare"),
+      EMAIL_MODE: z.literal("resend"),
       EMAIL_FROM: z.email(),
     }),
     d1_databases: z
@@ -27,7 +27,7 @@ export function validateProduction(
         }),
       )
       .length(1),
-    send_email: z.array(z.object({ name: z.literal("EMAIL") })).length(1),
+    send_email: z.never().optional(),
     routes: z
       .array(
         z.object({
@@ -65,6 +65,11 @@ export function validateProduction(
   for (const name of ["AUTH_SECRET", "THROTTLE_SECRET"])
     if ((secrets[name]?.length ?? 0) < 48)
       throw new Error("Required secrets missing");
+  if (
+    (secrets.RESEND_API_KEY?.length ?? 0) < 20 ||
+    !secrets.RESEND_API_KEY?.startsWith("re_")
+  )
+    throw new Error("Resend secret invalid");
   if (secrets.AUTH_SECRET === secrets.THROTTLE_SECRET)
     throw new Error("Secrets must be independent");
 }

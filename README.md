@@ -2,6 +2,8 @@
 
 A small landing page and invite-only shared identity for independently deployed apps. React static assets and a Hono/Better Auth API run in **one Cloudflare Worker**, backed by one identity D1 database. No Cloudflare account, paid plan, or real email is needed locally.
 
+Production authentication mail uses Resend through a small direct HTTP adapter; local development remains capture-only. See the operations runbook for the verified-domain, secret and DNS cutover steps.
+
 **Shared cookie warning:** every backend under mtn.lu is inside the same credential trust boundary. Do not put untrusted content or preview code under that namespace. See [security](docs/security.md).
 
 ## Run locally

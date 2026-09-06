@@ -1,5 +1,15 @@
 # Verification — 2026-09-06
 
+## PR #2 — Resend production readiness
+
+PR #2 replaces the planned Cloudflare Email Sending binding with a direct Resend HTTPS transport. Production preflight requires `EMAIL_MODE=resend`, a valid sender, and a Wrangler secret named `RESEND_API_KEY`; it also rejects a lingering `send_email` binding. Local development continues to capture messages in D1 and does not contact Resend.
+
+The transport sends only the recipient, sender, subject, and generated plain-text/HTML login message. It uses a SHA-256-derived idempotency key, does not request click/open tracking, and discards provider response details. Tests cover the outbound request and provider-failure boundary. The production example records the known Cloudflare account ID and the proposed `login@auth.mtn.lu` sender, but retains placeholders for resources that do not exist yet.
+
+No Cloudflare or Resend resource, DNS record, secret, database, route, Worker, or deployment was created or changed while preparing this PR. No real email was sent. Browser tests were not required because this change does not alter UI or browser authentication behavior.
+
+Checks executed for PR #2: `npm run types`, `npm run types:consumer`, `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:node`, and `npm run build`.
+
 Implementation is reviewable. [GitHub CI](https://github.com/mtn-lu/platform/actions/runs/34053027269) passed the full workflow, including all six Playwright cases in Chromium desktop and WebKit at a 320px phone viewport. No deployment, remote migration, remote secret change, account setting change, or real email send was performed.
 
 ## Executed checks

@@ -3,8 +3,9 @@ const schema = z.object({
   APP_ENV: z.enum(["local", "test", "production"]),
   CANONICAL_ORIGIN: z.url(),
   RETURN_ORIGINS: z.string(),
-  EMAIL_MODE: z.enum(["capture", "cloudflare"]),
+  EMAIL_MODE: z.enum(["capture", "resend"]),
   EMAIL_FROM: z.string(),
+  RESEND_API_KEY: z.string().min(20).startsWith("re_").optional(),
   AUTH_SECRET: z.string().min(48),
   THROTTLE_SECRET: z.string().min(48),
   LINK_ADDRESS_LIMIT: z.coerce.number().int().min(1).max(100),
@@ -37,9 +38,9 @@ export function config(env: CloudflareEnv) {
   if (c.APP_ENV === "production") {
     if (
       c.CANONICAL_ORIGIN !== "https://mtn.lu" ||
-      c.EMAIL_MODE !== "cloudflare" ||
-      !env.EMAIL ||
+      c.EMAIL_MODE !== "resend" ||
       !z.email().safeParse(c.EMAIL_FROM).success ||
+      !c.RESEND_API_KEY ||
       returnOrigins.some(
         (s) => !s.startsWith("https://") || s.includes(".invalid"),
       ) ||

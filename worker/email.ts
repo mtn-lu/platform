@@ -1,4 +1,5 @@
 import { config } from "./config.ts";
+import { sendWithResend, type Fetcher } from "./resend.ts";
 export interface LoginEmail {
   to: string;
   url: string;
@@ -14,7 +15,10 @@ export function escapeHtml(value: string): string {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 }
-export function emailTransport(env: CloudflareEnv): EmailTransport {
+export function emailTransport(
+  env: CloudflareEnv,
+  fetcher: Fetcher = fetch,
+): EmailTransport {
   const c = config(env);
   return {
     async send({ to, url }) {
@@ -28,14 +32,12 @@ export function emailTransport(env: CloudflareEnv): EmailTransport {
           .bind(to, text, html, Date.now())
           .run();
       } else {
-        if (!env.EMAIL) throw new Error("DELIVERY_UNAVAILABLE");
-        await env.EMAIL.send({
-          to,
-          from: c.EMAIL_FROM,
-          subject: "Your mtn.lu sign-in link",
-          text,
-          html,
-        });
+        if (!c.RESEND_API_KEY) throw new Error("DELIVERY_UNAVAILABLE");
+        await sendWithResend(
+          { apiKey: c.RESEND_API_KEY, from: c.EMAIL_FROM },
+          { to, url, text, html },
+          fetcher,
+        );
       }
     },
   };
