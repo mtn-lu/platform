@@ -29,7 +29,7 @@
     "types:consumer": "wrangler types tests/fixtures/consumer/worker-configuration.d.ts --config tests/fixtures/consumer/wrangler.jsonc --config wrangler.jsonc --env-interface ConsumerEnv --include-runtime=false"
   },
   "dependencies": {
-    "better-auth": "1.7.3",
+    "better-auth": "1.7.4",
     "hono": "4.13.7",
     "react": "19.2.8",
     "react-dom": "19.2.8",
